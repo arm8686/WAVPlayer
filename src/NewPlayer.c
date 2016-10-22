@@ -33,6 +33,7 @@ inline void BufferClear(void);
 void ErrorHandle(uint8_t blinknum,const char *message);
 
 volatile uint32_t Timer;
+volatile bool wav_ok=false,play = false,playctrl = true;
 
 int main(void)
 {
@@ -45,13 +46,12 @@ int main(void)
   FormatChunk_t FmCk;
   SizeWav_t WvSz;
   uint32_t decoy,musicnum,nowtrack = 0,skipcount = 0;
-  bool wav_ok=false,play = false,playctrl = true;
 
   GPIO_Init();//ADC_Init(0x00,HARD);
 
   GPIO0HIGH(4);
   GPIO0HIGH(5);
-  
+
   UART_Init(9600);// I2C_Init(SLAVE,STANDARD,0x20);
   xdev_out(Putc);
   xdev_in(Getc);
@@ -160,15 +160,12 @@ int main(void)
 	      if(Bct<HALFSIZE)
 		{
 		  f_read(&fil,&Buff[Bwi],HALFSIZE,&decoy);
-		  GPIO1HIGH(4);
 		  if(decoy!=HALFSIZE)play=false;
 		  Bwi = (Bwi+decoy) & (BUFFERSIZE-1);
 		  __disable_irq();
 		  Bct+=decoy;
 		  __enable_irq();
 		}
-	      else
-		GPIO1LOW(4);
 	    }
 	  if(nowtrack==musicnum)
 	    {
@@ -232,6 +229,18 @@ inline void BufferClear(void)
 
 void SysTick_Handler(void)
 {
+  static uint32_t led = 0;
+  led++;
+  if((led>1000)&&playctrl)
+  {
+    led = 0;
+    GPIO1TG(4);
+  }
+  else if(!playctrl)
+  {
+    GPIO1HIGH(4);
+  }
+  
   if((Timer<60000)&&GPIO1STAT(9))Timer++;
   disk_timerproc();	/* Disk timer process */
 }
