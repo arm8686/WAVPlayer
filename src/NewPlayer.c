@@ -49,6 +49,9 @@ int main(void)
 
   GPIO_Init();//ADC_Init(0x00,HARD);
 
+  GPIO0HIGH(4);
+  GPIO0HIGH(5);
+  
   UART_Init(9600);// I2C_Init(SLAVE,STANDARD,0x20);
   xdev_out(Putc);
   xdev_in(Getc);
@@ -185,13 +188,15 @@ void GPIO_Init(void)
 {
   LPC_IOCON->PIO0_1 = 0x10;//control playing music(Play)[pull up mode]
   LPC_IOCON->PIO0_3 = 0x10;//control lock[pull up mode]
+  LPC_IOCON->PIO0_4 = 0x00;
+  LPC_IOCON->PIO0_5 = 0x00;
   //****WARNING don't change this register LPC_IOCON->SWCLK_PIO0_10
   //****WARNING don't change this register LPC_IOCON->SWDIO_PIO1_3
   LPC_IOCON->PIO1_4 = 0x00;//indicator LED
   LPC_IOCON->PIO1_8 = 0x10;//control playing music(stop/start)[pull up mode]
   LPC_IOCON->PIO1_9 = 0x10;//control playing music(Back)[pull up mode]
 
-  LPC_GPIO0->DIR = 0x000000000;//
+  LPC_GPIO0->DIR = (1<<4)|(1<<5);//
   LPC_GPIO1->DIR = (1<<4);
 
   LPC_GPIO0->DATA = 0x00;//GPIO0 IS CLEARED
